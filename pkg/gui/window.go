@@ -1,7 +1,6 @@
 package gui
 
 import (
-	"fmt"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -19,14 +18,13 @@ func MainWindow() {
 	w := a.NewWindow("Allegro")
 	w.Resize(fyne.NewSize(900, 600))
 	ap := audio.MakeStreamer("/home/hooman/test.flac")
-	go audio.PlayMusic(ap.Streamer, ap.Format)
-	speaker.Lock()
 	ap.Ctrl.Paused = true
-	speaker.Unlock()
 	play_button := widget.NewButtonWithIcon("", theme.MediaPlayIcon(), func() {
+		if ap.Streamer.Position() == 0 && ap.Ctrl.Paused {
+			go ap.PlayMusic()
+		}
 		speaker.Lock()
 		ap.Ctrl.Paused = !ap.Ctrl.Paused
-		fmt.Println(ap.Ctrl.Paused)
 		speaker.Unlock()
 	})
 	slider := widget.NewSlider(0, float64(ap.Streamer.Len()))
@@ -39,7 +37,7 @@ func MainWindow() {
 				play_button.SetIcon(theme.MediaPlayIcon())
 			}
 			slider.SetValue(float64(ap.Streamer.Position()))
-			time.Sleep(1 * time.Second)
+			time.Sleep(time.Second / 10)
 		}
 	}()
 	content := container.New(layout.NewVBoxLayout(), container.New(layout.NewCenterLayout(), play_button), slider)

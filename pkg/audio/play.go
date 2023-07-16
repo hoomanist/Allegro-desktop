@@ -5,16 +5,26 @@ import (
 	"time"
 
 	"github.com/faiface/beep"
+	"github.com/faiface/beep/effects"
 	"github.com/faiface/beep/flac"
 	"github.com/faiface/beep/speaker"
 )
 
 type AudioPanel struct {
-	Ctrl     *beep.Ctrl
-	Format   beep.Format
-	Streamer beep.StreamSeekCloser
+	Streamer  beep.StreamSeeker
+	Ctrl      *beep.Ctrl
+	Resampler *beep.Resampler
+	Volume    *effects.Volume
+	Format    beep.Format
 }
 
+func NewAudioPanel(streamer beep.StreamSeeker, format beep.Format) *AudioPanel {
+	ctrl := &beep.Ctrl{Streamer: beep.Loop(-1, streamer)}
+	resampler := beep.ResampleRatio(4, 1, ctrl)
+	volume := &effects.Volume{Streamer: resampler, Base: 2}
+	return &AudioPanel{streamer, ctrl, resampler, volume, format}
+
+}
 func MakeStreamer(path string) *AudioPanel {
 	f, err := os.Open(path)
 	if err != nil {
@@ -24,11 +34,10 @@ func MakeStreamer(path string) *AudioPanel {
 	if err != nil {
 		panic("can't decode")
 	}
-	ctrl := &beep.Ctrl{Streamer: streamer}
-	return &AudioPanel{Ctrl: ctrl, Streamer: streamer, Format: format}
+	return NewAudioPanel(streamer, format)
 }
-func PlayMusic(streamer beep.StreamCloser, format beep.Format) {
-	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
-	speaker.Play(streamer)
+func (ap *AudioPanel) PlayMusic() {
+	speaker.Init(ap.Format.SampleRate, ap.Format.SampleRate.N(time.Second/10))
+	speaker.Play(ap.Volume)
 	select {}
 }
