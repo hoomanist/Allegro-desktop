@@ -2,6 +2,8 @@ package gui
 
 import (
 	"fmt"
+	"os"
+	"strings"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -15,7 +17,8 @@ import (
 
 func MainWindow() {
 	a := app.New()
-	icon, err := fyne.LoadResourceFromPath("/home/hooman/code/allegro/clef.png")
+	pwd, _ := os.Getwd()
+	icon, err := fyne.LoadResourceFromPath(strings.Join([]string{pwd, "clef.png"}, "/"))
 	if err != nil {
 		panic("no icon")
 	}
@@ -26,7 +29,7 @@ func MainWindow() {
 	})
 	w := a.NewWindow("Allegro")
 	w.Resize(fyne.NewSize(900, 600))
-	ap := audio.MakeStreamer("/home/hooman/test.flac")
+	ap := audio.MakeStreamer(strings.Join([]string{pwd, "test.flac"}, "/"))
 	ap.Ctrl.Paused = true
 	skip_next := widget.NewToolbarAction(theme.MediaSkipNextIcon(), func() {
 		//TODO
@@ -37,19 +40,12 @@ func MainWindow() {
 	})
 
 	play_button := widget.NewToolbarAction(theme.MediaPlayIcon(), func() {
-		if ap.Streamer.Position() == 0 && ap.Ctrl.Paused {
-			go ap.PlayMusic()
-		}
-		speaker.Lock()
-		ap.Ctrl.Paused = !ap.Ctrl.Paused
-		speaker.Unlock()
+		ap.PausePlay()
 	})
 	speaker.Lock()
-	Length := widget.NewLabel(ap.Format.SampleRate.D(ap.Streamer.Len()).Truncate(time.Second).String())
-	Position := widget.NewLabel("0s")
+	Position := NewToolbarLabel("")
 	speaker.Unlock()
-	slider := widget.NewSlider(0, float64(ap.Streamer.Len()))
-	toolbar_slider := ToolbarSlider{Slider: slider, Min: slider.Min, Max: slider.Max}
+	slider := NewToolbarSlider(0, float64(ap.Streamer.Len()))
 	go func() {
 		for ap.Streamer.Position() != ap.Streamer.Len() {
 			if !ap.Ctrl.Paused {
@@ -57,31 +53,34 @@ func MainWindow() {
 			} else {
 				play_button.Icon = theme.MediaPlayIcon()
 			}
-			toolbar_slider.Slider.SetValue(float64(ap.Streamer.Position()))
-			Position.SetText(ap.Format.SampleRate.D(ap.Streamer.Position()).Truncate(time.Second).String())
+			slider.Value = float64(ap.Streamer.Position())
+			Position.Text = ap.Position()
 			time.Sleep(time.Second / 20)
 
 		}
+		fmt.Println("wifj")
 		speaker.Lock()
 		ap.Ctrl.Paused = true
 		speaker.Unlock()
-		play_button.SetIcon(theme.MediaPlayIcon())
+		play_button.Icon = theme.MediaPlayIcon()
+		slider.Value = slider.Min
 	}()
 	toolbar := widget.NewToolbar(
 		skip_previous,
 		play_button,
 		skip_next,
 		widget.NewToolbarSeparator(),
-		&toolbar_slider,
+		slider,
+		widget.NewToolbarSeparator(),
+		Position,
 	)
 	go func() {
 		for {
-			//toolbar.Refresh()
+			toolbar.Refresh()
 			time.Sleep(time.Second)
 		}
 	}()
-	fmt.Println(Position, Length)
-	content := container.NewBorder(toolbar, nil, nil, nil, nil)
+	content := container.NewBorder(nil, toolbar, nil, nil, nil)
 	w.SetContent(content)
 	w.ShowAndRun()
 }
