@@ -38,7 +38,15 @@ jobs:
 
     - name: Generate Release Tag
       id: generate_tag
-      run: echo ::set-output name=release_tag::${GITHUB_REF#refs/tags/}
+      run: |
+        latest_tag=${{ steps.latest_tag.outputs.tag }}
+        if [[ $latest_tag == v* ]]; then
+          # If the latest tag already starts with 'v', use it as is
+          echo ::set-output name=release_tag::$latest_tag
+        else
+          # If the latest tag does not start with 'v', prefix 'v' to it
+          echo ::set-output name=release_tag::v$latest_tag
+        fi
 
     - name: Create Release
       id: create_release
