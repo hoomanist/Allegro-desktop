@@ -1,0 +1,55 @@
+name: Go
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.20'
+
+    - name: Build
+      run: go build -ldflags="-s -w" -o ./cmd/Allegro/Allegro ./cmd/Allegro
+
+    - name: Compress Binary
+      run: upx ./cmd/Allegro/Allegro
+
+    - name: Get Latest Tag
+      id: latest_tag
+      run: echo ::set-output name=tag::$(git describe --tags --abbrev=0)
+
+    - name: Generate Release Tag
+      id: generate_tag
+      run: echo ::set-output name=release_tag::${GITHUB_REF#refs/tags/}
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.generate_tag.outputs.release_tag }}
+        release_name: Release ${{ steps.generate_tag.outputs.release_tag }}
+        draft: false
+        prerelease: false
+
+    - name: Upload Release Asset
+      id: upload-release-asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./cmd/Allegro/Allegro
+        asset_name: Allegro
+        asset_content_type: application/octet-stream
