@@ -19,7 +19,7 @@ jobs:
     - name: Install Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y libgl1-mesa-dev libx11-dev libxcursor-dev libasound2-dev libxrandr-dev
+        sudo apt-get install -y libgl1-mesa-dev libx11-dev libxcursor-dev libasound2-dev libxrandr-dev libxinerama-dev xorg-dev
 
     - name: Set up Go
       uses: actions/setup-go@v2
