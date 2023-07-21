@@ -2,12 +2,14 @@ package audio
 
 import (
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/faiface/beep"
 	"github.com/faiface/beep/effects"
 	"github.com/faiface/beep/flac"
+	"github.com/faiface/beep/mp3"
 	"github.com/faiface/beep/speaker"
 )
 
@@ -24,24 +26,39 @@ func NewAudioPanel(streamer beep.StreamSeeker, format beep.Format) *AudioPanel {
 	resampler := beep.ResampleRatio(4, 1, ctrl)
 	volume := &effects.Volume{Streamer: resampler, Base: 2}
 	return &AudioPanel{streamer, ctrl, resampler, volume, format}
-
 }
+
 func MakeStreamer(path string) *AudioPanel {
 	f, err := os.Open(path)
 	if err != nil {
 		panic("no such file")
 	}
-	streamer, format, err := flac.Decode(f)
+
+	var streamer beep.StreamSeeker
+	var format beep.Format
+
+	switch strings.ToLower(filepath.Ext(path)) {
+	case ".flac":
+		streamer, format, err = flac.Decode(f)
+	case ".mp3":
+		streamer, format, err = mp3.Decode(f)
+	default:
+		panic("unsupported file format")
+	}
+
 	if err != nil {
 		panic("can't decode")
 	}
+
 	return NewAudioPanel(streamer, format)
 }
+
 func (ap *AudioPanel) PlayMusic() {
 	speaker.Init(ap.Format.SampleRate, ap.Format.SampleRate.N(time.Second/10))
 	speaker.Play(ap.Volume)
 	select {}
 }
+
 func (ap *AudioPanel) PausePlay() {
 	if ap.Streamer.Position() == 0 && ap.Ctrl.Paused {
 		go ap.PlayMusic()
@@ -50,6 +67,7 @@ func (ap *AudioPanel) PausePlay() {
 	ap.Ctrl.Paused = !ap.Ctrl.Paused
 	speaker.Unlock()
 }
+
 func (ap *AudioPanel) Position() string {
 	pos := ap.Format.SampleRate.D(ap.Streamer.Position()).Truncate(time.Second)
 	len := ap.Format.SampleRate.D(ap.Streamer.Len()).Truncate(time.Second)
