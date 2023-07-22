@@ -28,6 +28,7 @@ func MainWindow() {
 		Icon:    icon,
 	})
 	w := a.NewWindow("Allegro")
+	w.SetFixedSize(true)
 	w.Resize(fyne.NewSize(900, 600))
 	ap := audio.MakeStreamer(strings.Join([]string{pwd, "test.flac"}, "/"))
 	ap.Ctrl.Paused = true
@@ -58,7 +59,6 @@ func MainWindow() {
 			time.Sleep(time.Second / 20)
 
 		}
-		fmt.Println("wifj")
 		speaker.Lock()
 		ap.Ctrl.Paused = true
 		speaker.Unlock()

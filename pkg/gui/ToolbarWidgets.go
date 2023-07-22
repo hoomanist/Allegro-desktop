@@ -1,8 +1,6 @@
 package gui
 
 import (
-	"fmt"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/widget"
 )
@@ -15,6 +13,9 @@ type ToolbarSlider struct {
 type ToolbarLabel struct {
 	Text string
 }
+type ExtendedSlider struct {
+	widget.Slider
+}
 
 func (t *ToolbarLabel) ToolbarObject() fyne.CanvasObject {
 	l := widget.NewLabel(t.Text)
@@ -26,13 +27,16 @@ func NewToolbarLabel(Text string) *ToolbarLabel {
 }
 
 func (t *ToolbarSlider) ToolbarObject() fyne.CanvasObject {
-	s := widget.NewSlider(t.Min, t.Max)
-	fmt.Println()
+	s := &ExtendedSlider{}
+	s.Max = t.Max
+	s.Min = t.Min
+	s.ExtendBaseWidget(s)
 	s.SetValue(t.Value)
 	return s
 }
-func (t *ToolbarSlider) MinSize() fyne.Size {
-	return fyne.NewSize(750, 50)
+
+func (t *ExtendedSlider) MinSize() fyne.Size {
+	return fyne.NewSize(700, 30)
 }
 func NewToolbarSlider(Min float64, Max float64) *ToolbarSlider {
 	return &ToolbarSlider{Min: Min, Max: Max}
