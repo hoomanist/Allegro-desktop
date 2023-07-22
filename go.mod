@@ -5,11 +5,12 @@ go 1.20
 require (
 	fyne.io/fyne/v2 v2.3.5
 	github.com/faiface/beep v1.1.0
+	github.com/hajimehoshi/go-mp3 v0.3.0 // indirect; Add mp3 decoder dependency
+	github.com/hajimehoshi/oto v0.7.1 // indirect; Add oto dependency for MP3 support
 )
 
 require (
 	fyne.io/systray v1.10.1-0.20230602210930-b6a2d6ca2a7b // indirect
-	fyne.io/x/fyne v0.0.0-20230717140956-ad10f343f15e
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fredbi/uri v0.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
@@ -22,10 +23,8 @@ require (
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/goki/freetype v0.0.0-20220119013949-7a161fd3728c // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
-	github.com/hajimehoshi/oto v0.7.1 // indirect
 	github.com/icza/bitio v1.1.0 // indirect
 	github.com/jsummers/gobmp v0.0.0-20151104160322-e2ba15ffa76e // indirect
-	github.com/mewkiz/flac v1.0.8 // indirect
 	github.com/mewkiz/pkg v0.0.0-20230226050401-4010bf0fec14 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
@@ -43,3 +42,5 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	honnef.co/go/js/dom v0.0.0-20210725211120-f030747120f2 // indirect
 )
+
+require github.com/mewkiz/flac v1.0.7 // indirect

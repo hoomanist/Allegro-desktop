@@ -15,7 +15,7 @@ import (
 	"github.com/hoomanist/Allegro/pkg/audio"
 )
 
-func MainWindow() {
+func MainWindow(audioFilePath string) {
 	a := app.New()
 	pwd, _ := os.Getwd()
 	icon, err := fyne.LoadResourceFromPath(strings.Join([]string{pwd, "clef.png"}, "/"))
@@ -30,7 +30,7 @@ func MainWindow() {
 	w := a.NewWindow("Allegro")
 	w.SetFixedSize(true)
 	w.Resize(fyne.NewSize(900, 600))
-	ap := audio.MakeStreamer(strings.Join([]string{pwd, "test.flac"}, "/"))
+	ap := audio.MakeStreamer(audioFilePath) // Use the audioFilePath argument here
 	ap.Ctrl.Paused = true
 	skip_next := widget.NewToolbarAction(theme.MediaSkipNextIcon(), func() {
 		//TODO
